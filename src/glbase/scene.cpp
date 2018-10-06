@@ -329,7 +329,7 @@ Sphere::Sphere(uint iterations, vec4 color)
 	vertices.push_back(vec3(Cx, -Y2, -Cz));	//k
 	vertices.push_back(vec3(0, -Y1, 0));	//l
 
-											//create the indices list
+	//create the indices list
 	indices.push_back(ivec3(0, 1, 2));
 	indices.push_back(ivec3(0, 2, 3));
 	indices.push_back(ivec3(0, 3, 4));
@@ -423,26 +423,87 @@ void Sphere::Render()
 
 #pragma region CYLINDER
 
+// https://gamedev.net/forums/topic/359467-draw-cylinder-with-triangle-strips
+
 Cylinder::Cylinder(uint iterations, vec4 color, double height)
 {
-	// Generate cylinder (see Cube and Sphere constructors)
-	// BEGIN CODE HERE
+	_vertexBuffer = _indexBuffer = BAD_BUFFER;
 
+	_color = color;
 
+	std::vector<vec3> vertices;
+	std::vector<ivec3> indices;
 
-	// END CODE HERE 
+	decimal iter = 2*pi() / iterations;
+	decimal h = height * .5;
 
+	// Create the vertices list
+	vertices.reserve(iterations * 2 + 2);
+	for (uint i = 0; i < iterations; ++i)
+		vertices.push_back(vec3(.5 * cos(i * iter), h, .5 * sin(i * iter)));
+	for (uint i = 0; i < iterations; ++i)
+		vertices.push_back(vec3(.5 * cos(i * iter), -h, .5 * sin(i * iter)));
+	vertices.push_back(vec3(0, h, 0));
+	vertices.push_back(vec3(0, -h, 0));
+
+	// Create the indices list
+	indices.reserve(iterations * 4);
+	for (uint i = 0; i < iterations; ++i) // Sides
+	{
+		indices.push_back(ivec3(i, i+iterations, (i+1)%iterations));
+		indices.push_back(ivec3((i+1)%iterations + iterations, (i+1)%iterations, i+iterations));
+	}
+	for (uint i = 0; i < iterations; ++i) // Caps
+	{
+		indices.push_back(ivec3(iterations * 2, i, (i+1)%iterations));
+		indices.push_back(ivec3(iterations * 2 + 1, (i+1)%iterations + iterations, i+iterations));
+	}
+
+	_vertices.reserve(vertices.size());
+	_indices.reserve(indices.size());
+
+	for (vec3& v : vertices)
+		_vertices.push_back({ v + vec3(0, h, 0), normalize(v) });
+
+	for (ivec3& v : indices)
+	{
+		_indices.push_back(v.x);
+		_indices.push_back(v.y);
+		_indices.push_back(v.z);
+	}
+
+	// Create Vertex Array Object
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
+	// Generate Vertex Buffer
+	glGenBuffers(1, &_vertexBuffer);
+	glGenBuffers(1, &_indexBuffer);
+
+	// Fill Vertex Buffer
+	glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexPositionNormal), _vertices.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(uint), _indices.data(), GL_STATIC_DRAW);
+
+	// Set Vertex Attributes
+	glEnableVertexAttribArray(attribute_position);
+	glVertexAttribPointer(attribute_position, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPositionNormal), (const GLvoid*)0);
+	glEnableVertexAttribArray(attribute_normal);
+	glVertexAttribPointer(attribute_normal, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPositionNormal), (const GLvoid*)(0 + sizeof(vec3)));
+
+	glBindVertexArray(0);
+
+	debugGLError();
 }
 
 void Cylinder::Render()
 {
-	// Render cylinder (see Cube and Sphere render functions)
-	// BEGIN CODE HERE
+	Shape::Render();
 
-
-
-	// END CODE HERE 
-
+	glBindVertexArray(_vao);
+	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 #pragma endregion
 
@@ -451,24 +512,71 @@ void Cylinder::Render()
 
 Pyramid::Pyramid(vec4 color)
 {
-	// Generate pyramid (see Cube and Sphere constructors)
-	// BEGIN CODE HERE
+	_vertexBuffer = _indexBuffer = BAD_BUFFER;
+
+	_color = color;
+
+	VertexPositionNormal vertices[18] = {
+		{ vec3(0, 0, 0), vec3(0, -1, 0) },
+		{ vec3(1, 0, 0), vec3(0, -1, 0) },
+		{ vec3(0, 0, 1), vec3(0, -1, 0) },
+
+		{ vec3(0, 0, 1), vec3(0, -1, 0) },
+		{ vec3(1, 0, 0), vec3(0, -1, 0) },
+		{ vec3(1, 0, 1), vec3(0, -1, 0) },
 
 
+		{ vec3( 0, 0,  0), normalize(vec3(0, .5, -1)) },
+		{ vec3( 1, 0,  0), normalize(vec3(0, .5, -1)) },
+		{ vec3(.5, 1, .5), normalize(vec3(0, .5, -1)) },
 
-	// END CODE HERE 
+		{ vec3( 0, 0,  0), normalize(vec3(-1, .5, 0)) },
+		{ vec3( 0, 0,  1), normalize(vec3(-1, .5, 0)) },
+		{ vec3(.5, 1, .5), normalize(vec3(-1, .5, 0)) },
 
+		{ vec3( 0, 0,  1), normalize(vec3(0, .5, 1)) },
+		{ vec3( 1, 0,  1), normalize(vec3(0, .5, 1)) },
+		{ vec3(.5, 1, .5), normalize(vec3(0, .5, 1)) },
+
+		{ vec3( 1, 0,  0), normalize(vec3(1, .5, 0)) },
+		{ vec3( 1, 0,  1), normalize(vec3(1, .5, 0)) },
+		{ vec3(.5, 1, .5), normalize(vec3(1, .5, 0)) }
+	};
+	_vertices.assign(&vertices[0], &vertices[18]);
+
+	for (uint x = 0; x < 18; x++)
+		_vertices[x].position -= vec3(.5, 0, .5);
+
+	// Create Vertex Array Object
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
+	// Generate Vertex Buffer
+	glGenBuffers(1, &_vertexBuffer);
+
+	// Fill Vertex Buffer
+	glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(VertexPositionNormal), _vertices.data(), GL_STATIC_DRAW);
+
+	// Set Vertex Attributes
+	glEnableVertexAttribArray(attribute_position);
+	glVertexAttribPointer(attribute_position, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPositionNormal), (const GLvoid*)0);
+	glEnableVertexAttribArray(attribute_normal);
+	glVertexAttribPointer(attribute_normal, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPositionNormal), (const GLvoid*)(0 + sizeof(vec3)));
+
+	glBindVertexArray(0);
+
+	debugGLError();
 }
 
 void Pyramid::Render()
 {
-	// Render pyramid (see Cube and Sphere render functions)
-	// BEGIN CODE HERE
+	Shape::Render();
 
+	glBindVertexArray(_vao);
 
+	glDrawArrays(GL_TRIANGLES, 0, 18);
 
-	// END CODE HERE 
-
+	glBindVertexArray(0);
 }
 #pragma endregion
-	
