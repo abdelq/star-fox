@@ -69,38 +69,31 @@ void CoreTP1::Render(double dt)
 			// If the projectile we consider comes from an enemy
 			if (!(*proj)->friendly())
 			{
-
-				// Test if the projectile collides with the ship
-				// If it does, set hit_something and player_shot to true
-				// BEGIN CODE HERE
-
-
-
-				// END CODE HERE
-
+				hit_something = player.Intersect((*proj)->position());
+				player_shot |= hit_something;
 			}
-			// If the projectile we consider comes from the player 
+			// If the projectile we consider comes from the player
 			else
 			{
-				// Test if the projectile collides with an enemy
-				// If it does, add 1000 points to player.score, then delete properly the enemy
-				// BEGIN CODE HERE
-
-
-
-				// END CODE HERE 
+				for (auto fighter = active_fighters.begin(); fighter != active_fighters.end();)
+				{
+					if ((*fighter)->Intersect((*proj)->position()))
+					{
+						hit_something = true;
+						player.score += 1000;
+						fighter = active_fighters.erase(fighter);
+					}
+					else
+					{
+					    ++fighter;
+					}
+				}
 			}
 
 			// If the projectile has hit something
 			if (hit_something)
 			{
-				// Destroy projectile properly
-				// BEGIN CODE HERE
-	
-
-
-				// END CODE HERE 
-
+				proj = active_projectiles.erase(proj);
 			}
 			else
 			{
@@ -209,8 +202,7 @@ void CoreTP1::OnKeySPACE(bool down)
 	else
 	{
 		game_over = false;
-		start_time = glfwGetTime();
-		player = Player();
+		clear_scene(); // XXX
 	}
 }
 
@@ -262,40 +254,25 @@ void CoreTP1::fire_enemies()
 
 void CoreTP1::clean_scene()
 {
-
-	// Remove projectiles if needed
-	// BEGIN CODE HERE
-
-
-
-	// END CODE HERE 
-
-	// Remove fighters if needed
-	// BEGIN CODE HERE
-
-
-
-	// END CODE HERE
-	
+	active_projectiles.clear();
+	active_fighters.clear();
 }
 
 void CoreTP1::clear_scene()
 {
-	// Delete every projectile, every fighter and reset clock to the current time
-	// BEGIN CODE HERE
-
-
-
-	// END CODE HERE
-
+	clean_scene();
+	start_time = glfwGetTime();
+	player = Player();
 }
 
 void CoreTP1::player_hit()
 {
-	// If god_mode is not activated, decrease players.lifes, clear the scene, reset player position. If player has no lifes left, set game_over to true
-	// BEGIN CODE HERE
+	if (!player.god_mode)
+	{
+		clean_scene();
 
-
-
-	// END CODE HERE
+		player.Position = vec3();
+		if (--player.lifes == 0)
+			game_over = true;
+	}
 }
