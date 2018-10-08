@@ -51,15 +51,20 @@ AABB Node::GetFullBoundingBox()
 
 bool Node::Intersect(vec3 world_pos)
 {
-	bool intersect = false;
+	// XXX What about GetGeneralAABB?
 
-	// Compute if world_pos is in the current Node (use hierarchy and AABBs ...)
-	// BEGIN CODE HER
+	// XXX Should I just do general AABB for collision?
+	for (auto box : GetAABBList())
+	{
+		if (box.min.x < world_pos.x && box.max.x > world_pos.x &&
+		    box.min.y < world_pos.y && box.max.y > world_pos.y &&
+		    box.min.z < world_pos.z && box.max.z > world_pos.z)
+		{
+		return true;
+		}
+	}
 
-
-
-	// END CODE HERE
-
+	return false;
 }
 
 std::vector<AABB> Node::GetAABBList()
@@ -109,13 +114,20 @@ AABB Node::GetGeneralAABB()
 
 void Node::ComputeBoundingBox()
 {
-	// Compute the bounding box of the current node (don't forget transformations ...)
-	// BEGIN CODE HERE
+	_boundingBox = { vec3(1.f) * 100.f, vec3(1.f) * -100.f }; // XXX
+	for (vec3 b : boundaries)
+	{
+		//vec4 bTrans = vec4(b, 1) * fullTransform(); // XXX
+		vec4 bTrans = fullTransform() * vec4(b, 1); // XXX
 
+		_boundingBox.min.x = min(bTrans.x, _boundingBox.min.x); // XXX
+		_boundingBox.min.y = min(bTrans.y, _boundingBox.min.y); // XXX
+		_boundingBox.min.z = min(bTrans.z, _boundingBox.min.z); // XXX
 
-
-	// END CODE HERE
-
+		_boundingBox.max.x = max(bTrans.x, _boundingBox.max.x); // XXX
+		_boundingBox.max.y = max(bTrans.y, _boundingBox.max.y); // XXX
+		_boundingBox.max.z = max(bTrans.z, _boundingBox.max.z); // XXX
+	}
 }
 
 

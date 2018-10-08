@@ -124,12 +124,24 @@ void CoreTP1::Render(double dt)
 			// Clear AABB lines buffer
 			_lineVertices.clear();
 
-			// Fill AABB lines buffer for fighters, player and player's component (see AABB related functions ...) and call DrawAABBs 
-			// BEGIN CODE HERE
+			// Fill AABB lines for player and player's component
+			AABB(player.GetGlobalAABB().min, player.GetGlobalAABB().max); // XXX 2x call
+			for (auto box : player.GetAABB())
+			{
+				AABB(box.min, box.max);
+			}
 
+			// Fill AABB lines for fighters
+			for (auto& fighter : active_fighters)
+			{
+				AABB(fighter->GetGeneralAABB().min, fighter->GetGeneralAABB().max); // XXX 2x call
+				for (auto box : fighter->GetAABBList())
+				{
+					AABB(box.min, box.max);
+				}
+			}
 
-
-			// END CODE HERE 
+			DrawAABBs();
 		}
 
 
