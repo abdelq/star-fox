@@ -114,11 +114,14 @@ AABB Node::GetGeneralAABB()
 
 void Node::ComputeBoundingBox()
 {
+	auto fullTrans = fullTransform(); // XXX decl type
 	_boundingBox = { vec3(1.f) * 100.f, vec3(1.f) * -100.f }; // XXX
 	for (vec3 b : boundaries)
 	{
 		//vec4 bTrans = vec4(b, 1) * fullTransform(); // XXX
-		vec4 bTrans = fullTransform() * vec4(b, 1); // XXX
+		// Pas super, peut causer des problèmes avec pyramide/cylindre
+		// centrés sur bases trop gros pour bounding box, mais wonky
+		vec4 bTrans = fullTrans * vec4(b, 1); // XXX
 
 		_boundingBox.min.x = min(bTrans.x, _boundingBox.min.x); // XXX
 		_boundingBox.min.y = min(bTrans.y, _boundingBox.min.y); // XXX

@@ -74,6 +74,7 @@ private:
 	float accel_value = 30.0f;
 	vec2 speed = vec2(0.0f);//xy
 	float max_speed = 20.0f;
+	vec2 rotation = vec2(0.0f);//xz
 	float max_x_rotation = 15.0f;
 	float max_z_rotation = 35.0f;
 	float rotation_coeff = 2.5f;
