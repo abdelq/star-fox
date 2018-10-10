@@ -222,16 +222,12 @@ void Player::Update(double dt)
 
 std::vector<glm::vec3> Player::getProjectileSpawnPoint() const
 {
-	std::vector<vec3> results;
-
-	// Fill the vector with the ship's projectile spawn positions
-	// BEGIN CODE HERE
-
-
-
-	// END CODE HERE
-
-	return results; // XXX Just put a new instanciated vector with the values
+	return {
+		Position + vec3(-1.0, -0.0, -0.5),
+		Position + vec3(+1.0, -0.0, -0.5),
+		Position + vec3(-0.0, +0.5, -0.5),
+		Position + vec3(-0.0, -0.5, -0.5),
+	};
 }
 
 AABB Player::GetGlobalAABB() const

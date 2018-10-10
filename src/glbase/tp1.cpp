@@ -18,7 +18,7 @@ void CoreTP1::Render(double dt)
 	{
 
 		// Clean projectiles and fighters if needed
-		clean_scene();
+		clean_scene(); // XXX
 
 		// Make a fighter appear if needed
 		spawn_enemies();
@@ -30,14 +30,18 @@ void CoreTP1::Render(double dt)
 		player.Update(dt);
 		
 		auto time = glfwGetTime();
-		if (player.input[Player::Input::SPACE])
+		if (player.input[Player::Input::SPACE] && time - player.last_shot > player.shot_delay)
 		{
-			// Make the player's ship fire if needed
-			// BEGIN CODE HERE
-
-
-
-			// END CODE HERE
+			player.last_shot = time;
+			for (vec3 point : player.getProjectileSpawnPoint())
+			{
+				active_projectiles.push_back(std::make_unique<Projectile>(
+					point,
+					player.projectile_speed, // TODO Rotate them the right way
+					player.projectile_color_in, player.projectile_color_out,
+					true
+				));
+			}
 		}
 
 		// Transform and display floor
@@ -56,15 +60,9 @@ void CoreTP1::Render(double dt)
 
 		for (auto proj = active_projectiles.begin(); proj != active_projectiles.end();)
 		{
-			// Update and display projectiles
-			// BEGIN CODE HERE
-
-
-
-			// END CODE HERE 		
+			(*proj)->Update(dt);
 
 			bool hit_something = false;
-
 
 			// If the projectile we consider comes from an enemy
 			if (!(*proj)->friendly())
@@ -97,6 +95,7 @@ void CoreTP1::Render(double dt)
 			}
 			else
 			{
+				(*proj)->Render(); // XXX
 				++proj;
 			}
 		}
@@ -214,7 +213,9 @@ void CoreTP1::OnKeySPACE(bool down)
 	else
 	{
 		game_over = false;
-		clear_scene(); // XXX
+		//clear_scene(); // XXX
+		start_time = glfwGetTime();
+		player = Player();
 	}
 }
 
@@ -266,8 +267,20 @@ void CoreTP1::fire_enemies()
 
 void CoreTP1::clean_scene()
 {
-	active_projectiles.clear();
-	active_fighters.clear();
+	for (auto proj = active_projectiles.begin(); proj != active_projectiles.end();)
+	{
+		if ((*proj)->position().z > 10.f || (*proj)->position().z < -100.f) // XXX Proper coordinates
+		{
+			proj = active_projectiles.erase(proj);
+		}
+		else
+		{
+			++proj;
+		}
+	}
+
+	// TODO Fighters
+	//active_fighters.clear();
 }
 
 void CoreTP1::clear_scene()
