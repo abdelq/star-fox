@@ -65,3 +65,37 @@ void Fighter1::Update(double dt)
 	// END CODE HERE 
 
 }
+
+Fighter2::Fighter2(const vec3& position, const vec3& velocity, double rate_of_fire, vec3 proj_vel) : Entity(position, velocity, rate_of_fire, proj_vel)
+{
+
+	// Build fighter1 (build a hierarchy using primitives and transformations)
+	// BEGIN CODE HERE
+
+
+
+	// END CODE HERE 
+
+}
+
+void Fighter2::Render()
+{
+	// Render fighter1
+	// BEGIN CODE HERE
+
+
+
+	// END CODE HERE 
+
+}
+
+void Fighter2::Update(double dt)
+{
+	// Update fighter1's position
+	// BEGIN CODE HERE
+
+
+
+	// END CODE HERE 
+
+}

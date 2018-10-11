@@ -106,15 +106,10 @@ void CoreTP1::Render(double dt)
 			player_hit();
 		}
 
-		for (auto it = active_fighters.begin(); it != active_fighters.end(); ++it)
+		for (auto fighter = active_fighters.begin(); fighter != active_fighters.end(); ++fighter)
 		{
-			// Update and display fighters
-			// BEGIN CODE HERE
-
-
-
-			// END CODE HERE 
-
+			(*fighter)->Update(dt);
+			(*fighter)->Render();
 		}
 
 
@@ -244,34 +239,55 @@ void CoreTP1::DrawGameText(int lives, int score)
 void CoreTP1::spawn_enemies()
 {
 	auto time = glfwGetTime();
-	auto x = time - start_time;
-
-	if (x > spawn_delay_after_start)
+	if (time - start_time > spawn_delay_after_start && time - last_spawn > spawn_delay)
 	{
-		// Spawn an ennemy (at least two types, chosen randomly) in the scene, at a random position
-		// BEGIN CODE HERE
+		last_spawn = time;
 
-
-
-		// END CODE HERE 
+		// XXX What about seed of rand
+		vec3 spawn = vec3(rand() % 8, rand() % 7, -100); // XXX biased random bc modulo + hmmm world size in z
+		if ((rand() % 100) < 75) // XXX Biased
+		{
+			active_fighters.push_back(std::make_unique<Fighter1>(
+				spawn, vec3(0, 0, 2.5), 2.0f, vec3(0, 0, 5) // XXX Tweak
+			));
+		}
+		else
+		{
+			active_fighters.push_back(std::make_unique<Fighter2>(
+				spawn, vec3(0, 0, 5), 2.0f, vec3(0, 0, 10) // XXX Tweak
+			));
+		}
 	}
 }
 
 void CoreTP1::fire_enemies()
 {
-	// Make every active fighter fire if needed
-	// BEGIN CODE HERE
-
-
-
-	// END CODE HERE 
+	for (auto fighter = active_fighters.begin(); fighter != active_fighters.end(); ++fighter)
+	{
+		auto time = glfwGetTime();
+		if (time - (*fighter)->last_shot > (*fighter)->rof)
+		{
+			(*fighter)->last_shot = time;
+			for (vec3 point : (*fighter)->GetProjectileSpawnPoint())
+			{
+				// XXX Randomness to colors? Speed projectile_vel, maybe depending on the score?
+				active_projectiles.push_back(std::make_unique<Projectile>(
+					point,
+					(*fighter)->projectile_vel,
+					vec4(0.0f, 0.0f, 0.7f, 1.0f),
+					vec4(0.0f, 0.0f, 0.7f, 0.8f),
+					false
+				));
+			}
+		}
+	}
 }
 
 void CoreTP1::clean_scene()
 {
 	for (auto proj = active_projectiles.begin(); proj != active_projectiles.end();)
 	{
-		if ((*proj)->position().z > 10.f || (*proj)->position().z < -100.f) // XXX Proper coordinates
+		if ((*proj)->position().z > 10.f || (*proj)->position().z < -100.f) // XXX
 		{
 			proj = active_projectiles.erase(proj);
 		}
@@ -281,8 +297,18 @@ void CoreTP1::clean_scene()
 		}
 	}
 
-	// TODO Fighters
-	//active_fighters.clear();
+	for (auto fighter = active_fighters.begin(); fighter != active_fighters.end();)
+	{
+		if ((*fighter)->Position.z > 4) // XXX
+		{
+			player.score -= 1000;
+			fighter = active_fighters.erase(fighter);
+		}
+		else
+		{
+			++fighter;
+		}
+	}
 }
 
 void CoreTP1::clear_scene()

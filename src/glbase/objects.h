@@ -72,3 +72,23 @@ protected:
 	// END CODE HERE 
 
 };
+
+class Fighter2 : public Entity
+{
+public:
+	Fighter2() = delete;
+	Fighter2(const vec3 &position, const vec3 &velocity, double rate_of_fire, vec3 proj_vel = vec3(0.0f, 0.0f, 5.0f));
+
+	virtual void Render() override;
+	virtual void Update(double dt) override;
+
+protected:
+
+	// Every attributes needed to build Fighter2's ship 
+	// BEGIN CODE HERE
+
+
+
+	// END CODE HERE 
+
+};
