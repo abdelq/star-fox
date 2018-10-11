@@ -194,8 +194,8 @@ void Player::Update(double dt)
 	core->SetTransform(
 		translate(Position) *
 		core_trans *
-		rotate(mat4(), rotation[1]/360 * 1 * pi() * rotation_coeff, X_AXIS) *
-		rotate(mat4(), -rotation[0]/360 * 1 * pi() * rotation_coeff, Z_AXIS)
+		rotate(mat4(), rotation[1]/360 * 2 * pi() * rotation_coeff, X_AXIS) *
+		rotate(mat4(), -rotation[0]/360 * 2 * pi() * rotation_coeff, Z_AXIS)
 	);
 
 	// XXX Modifying rocket fire length

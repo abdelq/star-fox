@@ -35,6 +35,7 @@ void CoreTP1::Render(double dt)
 			player.last_shot = time;
 			for (vec3 point : player.getProjectileSpawnPoint())
 			{
+				// XXX I want proper rotation in speed !
 				active_projectiles.push_back(std::make_unique<Projectile>(
 					point,
 					player.projectile_speed,
