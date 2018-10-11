@@ -118,18 +118,18 @@ void Node::ComputeBoundingBox()
 	_boundingBox = { vec3(1.f) * 100.f, vec3(1.f) * -100.f }; // XXX
 	for (vec3 b : boundaries)
 	{
-		//vec4 bTrans = vec4(b, 1) * fullTransform(); // XXX
 		// Pas super, peut causer des problèmes avec pyramide/cylindre
 		// centrés sur bases trop gros pour bounding box, mais wonky
 		vec4 bTrans = fullTrans * vec4(b, 1); // XXX
 
-		_boundingBox.min.x = min(bTrans.x, _boundingBox.min.x); // XXX
-		_boundingBox.min.y = min(bTrans.y, _boundingBox.min.y); // XXX
-		_boundingBox.min.z = min(bTrans.z, _boundingBox.min.z); // XXX
+		// XXX
+		_boundingBox.min.x = min(bTrans.x, _boundingBox.min.x);
+		_boundingBox.min.y = min(bTrans.y, _boundingBox.min.y);
+		_boundingBox.min.z = min(bTrans.z, _boundingBox.min.z);
 
-		_boundingBox.max.x = max(bTrans.x, _boundingBox.max.x); // XXX
-		_boundingBox.max.y = max(bTrans.y, _boundingBox.max.y); // XXX
-		_boundingBox.max.z = max(bTrans.z, _boundingBox.max.z); // XXX
+		_boundingBox.max.x = max(bTrans.x, _boundingBox.max.x);
+		_boundingBox.max.y = max(bTrans.y, _boundingBox.max.y);
+		_boundingBox.max.z = max(bTrans.z, _boundingBox.max.z);
 	}
 }
 

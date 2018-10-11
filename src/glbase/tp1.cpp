@@ -18,7 +18,7 @@ void CoreTP1::Render(double dt)
 	{
 
 		// Clean projectiles and fighters if needed
-		clean_scene(); // XXX
+		clean_scene();
 
 		// Make a fighter appear if needed
 		spawn_enemies();
@@ -37,7 +37,7 @@ void CoreTP1::Render(double dt)
 			{
 				active_projectiles.push_back(std::make_unique<Projectile>(
 					point,
-					player.projectile_speed, // TODO Rotate them the right way
+					player.projectile_speed,
 					player.projectile_color_in, player.projectile_color_out,
 					true
 				));
@@ -95,7 +95,7 @@ void CoreTP1::Render(double dt)
 			}
 			else
 			{
-				(*proj)->Render(); // XXX
+				(*proj)->Render();
 				++proj;
 			}
 		}
@@ -124,7 +124,8 @@ void CoreTP1::Render(double dt)
 			_lineVertices.clear();
 
 			// Fill AABB lines for player and player's component
-			AABB(player.GetGlobalAABB().min, player.GetGlobalAABB().max); // XXX 2x call
+			auto globalAABB = player.GetGlobalAABB();
+			AABB(globalAABB.min, globalAABB.max);
 			for (auto box : player.GetAABB())
 			{
 				AABB(box.min, box.max);
@@ -133,7 +134,8 @@ void CoreTP1::Render(double dt)
 			// Fill AABB lines for fighters
 			for (auto& fighter : active_fighters)
 			{
-				AABB(fighter->GetGeneralAABB().min, fighter->GetGeneralAABB().max); // XXX 2x call
+				auto generalAABB = fighter->GetGeneralAABB();
+				AABB(generalAABB.min, generalAABB.max);
 				for (auto box : fighter->GetAABBList())
 				{
 					AABB(box.min, box.max);

@@ -194,12 +194,12 @@ void Player::Update(double dt)
 	core->SetTransform(
 		translate(Position) *
 		core_trans *
-		rotate(mat4(), rotation[1]/360 * 2 * pi() * rotation_coeff, X_AXIS) *
-		rotate(mat4(), -rotation[0]/360 * 2 * pi() * rotation_coeff, Z_AXIS)
+		rotate(mat4(), rotation[1]/360 * 1 * pi() * rotation_coeff, X_AXIS) *
+		rotate(mat4(), -rotation[0]/360 * 1 * pi() * rotation_coeff, Z_AXIS)
 	);
 
 	// XXX Modifying rocket fire length
-	float fireLength = .5f * sqrt(speed.x*speed.x + speed.y*speed.y)/sqrt(2*max_speed*max_speed) - .25f;
+	float fireLength = .75f * sqrt(speed.x*speed.x + speed.y*speed.y)/sqrt(2*max_speed*max_speed) - .25f;
 	// XXX Not acceptable, slightly shitty animation
 	left_rocket_fire->SetTransform(
 		left_rocket_trans *
@@ -223,10 +223,10 @@ void Player::Update(double dt)
 std::vector<glm::vec3> Player::getProjectileSpawnPoint() const
 {
 	return {
-		Position + vec3(-1.0, -0.0, -0.5),
+		Position + vec3(-1.0, +0.0, -0.5),
 		Position + vec3(+1.0, -0.0, -0.5),
 		Position + vec3(-0.0, +0.5, -0.5),
-		Position + vec3(-0.0, -0.5, -0.5),
+		Position + vec3(+0.0, -0.5, -0.5),
 	};
 }
 
