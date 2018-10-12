@@ -130,9 +130,9 @@ void CoreTP1::Render(double dt)
 			// Fill AABB lines for fighters
 			for (auto& fighter : active_fighters)
 			{
-				auto generalAABB = fighter->GetGeneralAABB();
-				AABB(generalAABB.min, generalAABB.max);
-				for (auto box : fighter->GetAABBList())
+				auto globalAABB = fighter->GetGlobalAABB();
+				AABB(globalAABB.min, globalAABB.max);
+				for (auto box : fighter->GetAABB())
 				{
 					AABB(box.min, box.max);
 				}
@@ -245,7 +245,7 @@ void CoreTP1::spawn_enemies()
 		last_spawn = time;
 
 		// XXX What about seed of rand
-		vec3 spawn = vec3(rand() % 8, rand() % 7, -100); // XXX biased random bc modulo + hmmm world size in z
+		vec3 spawn = vec3(rand() % 16 - 8, rand() % 14 - 7, -100); // XXX biased random bc modulo + hmmm world size in z
 		if ((rand() % 100) < 75) // XXX Biased
 		{
 			active_fighters.push_back(std::make_unique<Fighter1>(

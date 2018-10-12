@@ -47,6 +47,10 @@ public:
 	double rof = 2.0f;
 	vec3 projectile_vel = vec3(0.0f, 0.0f, 5.0f);
 
+	virtual AABB GetGlobalAABB() const;
+	virtual std::vector<AABB> GetAABB() const;
+	virtual bool Intersect(vec3 world_pos) const;
+
 protected:
 
 	vec3 _velocity;
@@ -62,15 +66,20 @@ public:
 	virtual void Render() override;
 	virtual void Update(double dt) override;
 
-protected:
+	virtual AABB GetGlobalAABB() const;
+	virtual std::vector<AABB> GetAABB() const;
+	virtual bool Intersect(vec3 world_pos) const;
 
-	// Every attributes needed to build Fighter1's ship 
-	// BEGIN CODE HERE
+private:
+	// Meshes
+	std::shared_ptr<Box> horizontal;
+	std::shared_ptr<Box> vertical;
 
-
-
-	// END CODE HERE 
-
+	std::shared_ptr<Pyramid> center;
+	std::shared_ptr<Pyramid> left;
+	std::shared_ptr<Pyramid> right;
+	std::shared_ptr<Pyramid> top;
+	std::shared_ptr<Pyramid> bottom;
 };
 
 class Fighter2 : public Entity
@@ -81,6 +90,10 @@ public:
 
 	virtual void Render() override;
 	virtual void Update(double dt) override;
+
+	virtual AABB GetGlobalAABB() const;
+	virtual std::vector<AABB> GetAABB() const;
+	virtual bool Intersect(vec3 world_pos) const;
 
 protected:
 

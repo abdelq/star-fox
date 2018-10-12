@@ -52,6 +52,13 @@ AABB Node::GetFullBoundingBox()
 bool Node::Intersect(vec3 world_pos)
 {
 	// XXX What about GetGeneralAABB?
+	AABB generalAABB = GetGeneralAABB();
+	if (generalAABB.min.x < world_pos.x && generalAABB.max.x > world_pos.x &&
+	    generalAABB.min.y < world_pos.y && generalAABB.max.y > world_pos.y &&
+	    generalAABB.min.z < world_pos.z && generalAABB.max.z > world_pos.z)
+	{
+		return true;
+	}
 
 	// XXX Should I just do general AABB for collision?
 	for (auto box : GetAABBList())
@@ -60,7 +67,7 @@ bool Node::Intersect(vec3 world_pos)
 		    box.min.y < world_pos.y && box.max.y > world_pos.y &&
 		    box.min.z < world_pos.z && box.max.z > world_pos.z)
 		{
-		return true;
+			return true;
 		}
 	}
 
