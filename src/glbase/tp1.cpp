@@ -254,6 +254,7 @@ void CoreTP1::spawn_enemies()
 		}
 		else
 		{
+			// TODO
 			active_fighters.push_back(std::make_unique<Fighter2>(
 				spawn, vec3(0, 0, 5), 2.0f, vec3(0, 0, 10) // XXX Tweak
 			));

@@ -60,8 +60,7 @@ bool Node::Intersect(vec3 world_pos)
 		return true;
 	}
 
-	// XXX Should I just do general AABB for collision?
-	for (auto box : GetAABBList())
+	/*for (auto box : GetAABBList())
 	{
 		if (box.min.x < world_pos.x && box.max.x > world_pos.x &&
 		    box.min.y < world_pos.y && box.max.y > world_pos.y &&
@@ -69,7 +68,7 @@ bool Node::Intersect(vec3 world_pos)
 		{
 			return true;
 		}
-	}
+	}*/
 
 	return false;
 }
