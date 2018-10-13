@@ -158,8 +158,10 @@ void Player::Render()
 void Player::Update(double dt)
 {
 	// Acceleration
-	accel.x = input[RIGHT] * accel_value - input[LEFT] * accel_value;
-	accel.y = input[UP] * accel_value - input[DOWN] * accel_value;
+	accel = vec2(input[RIGHT] - input[LEFT], input[UP] - input[DOWN]);
+	if (accel != vec2(0))
+		accel = normalize(accel);
+	accel *= accel_value;
 
 	// Speed
 	speed += accel * (float)dt;

@@ -72,7 +72,7 @@ Fighter1::Fighter1(const vec3& position, const vec3& velocity, double rate_of_fi
 	vertical->AddChild(down.get());
 
 	// Transformations
-	// XXX make sure I meet all the requirements + Maybe add caps
+	// XXX make sure I meet all the requirements + Maybe add caps + shearing
 	horizontal->SetTransform(scale(vec3(2, 1, 1)));
 	vertical->SetTransform(scale(vec3(1, 1, 2)));
 
