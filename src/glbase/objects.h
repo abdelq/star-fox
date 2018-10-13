@@ -99,13 +99,16 @@ public:
 	virtual std::vector<AABB> GetAABB();
 	virtual bool Intersect(vec3 world_pos);
 
-protected:
+private:
+	// Meshes
+	std::shared_ptr<Box> center;
+	std::shared_ptr<Pyramid> top;
 
-	// Every attributes needed to build Fighter2's ship 
-	// TODO CODE HERE
+	std::shared_ptr<Cylinder> left;
+	std::shared_ptr<Cylinder> right;
 
+	std::shared_ptr<Sphere> backLeft;
+	std::shared_ptr<Sphere> backRight;
 
-
-	// END CODE HERE 
-
+	bool scaleUp = true;
 };

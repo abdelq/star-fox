@@ -54,18 +54,18 @@ Fighter1::Fighter1(const vec3& position, const vec3& velocity, double rate_of_fi
 {
 	score = 1000;
 
-	// TODO Review requirements for ennemy
+	static vec4 chartreuse = vec4(223, 255, 0, 255) / 255;
 	static vec4 forestGreen = vec4(34, 139, 34, 255) / 255;
 
 	// Primitives
 	horizontal = std::make_shared<Box>(forestGreen);
 	vertical = std::make_shared<Box>(forestGreen);
 
-	center = std::make_shared<Pyramid>(forestGreen);
-	left = std::make_shared<Pyramid>(forestGreen);
-	right = std::make_shared<Pyramid>(forestGreen);
-	up = std::make_shared<Pyramid>(forestGreen);
-	down = std::make_shared<Pyramid>(forestGreen);
+	center = std::make_shared<Pyramid>(chartreuse);
+	left = std::make_shared<Pyramid>(chartreuse);
+	right = std::make_shared<Pyramid>(chartreuse);
+	up = std::make_shared<Pyramid>(chartreuse);
+	down = std::make_shared<Pyramid>(chartreuse);
 
 	// Hierarchy
 	center->AddChild(horizontal.get());
@@ -78,19 +78,18 @@ Fighter1::Fighter1(const vec3& position, const vec3& velocity, double rate_of_fi
 	vertical->AddChild(down.get());
 
 	// Transformations
-	// TODO make sure I meet all the requirements + Maybe add caps + shearing
 	horizontal->SetTransform(scale(vec3(2, 1, 1)));
 	vertical->SetTransform(scale(vec3(1, 1, 2)));
 
 	center->SetTransform(translate(Position) *
 		rotate(mat4(), .5f * pi(), X_AXIS));
-	left->SetTransform(scale(vec3(.5, 1, 1)) * translate(Y_AXIS) *
+	left->SetTransform(scale(vec3(.5, 1, 1)) * translate(vec3(0, 1, 0)) *
 		rotate(mat4(), .5f * pi(), Z_AXIS));
-	right->SetTransform(scale(vec3(.5, 1, 1)) * translate(Y_AXIS) *
+	right->SetTransform(scale(vec3(.5, 1, 1)) * translate(vec3(0, 1, 0)) *
 		rotate(mat4(), -.5f * pi(), Z_AXIS));
-	up->SetTransform(scale(vec3(1, 1, .5)) * translate(Y_AXIS) *
+	up->SetTransform(scale(vec3(1, 1, .5)) * translate(vec3(0, 1, 0)) *
 		rotate(mat4(), -.5f * pi(), X_AXIS));
-	down->SetTransform(scale(vec3(1, 1, .5)) * translate(Y_AXIS) *
+	down->SetTransform(scale(vec3(1, 1, .5)) * translate(vec3(0, 1, 0)) *
 		rotate(mat4(), .5f * pi(), X_AXIS));
 }
 
@@ -135,48 +134,93 @@ Fighter2::Fighter2(const vec3& position, const vec3& velocity, double rate_of_fi
 {
 	score = 2000;
 
-	// Build fighter1 (build a hierarchy using primitives and transformations)
-	// TODO CODE HERE
+	static vec4 chartreuse = vec4(223, 255, 0, 255) / 255;
+	static vec4 forestGreen = vec4(34, 139, 34, 255) / 255;
 
+	// Primitives
+	center = std::make_shared<Box>(forestGreen);
+	top = std::make_shared<Pyramid>(forestGreen);
 
+	left = std::make_shared<Cylinder>(16, chartreuse, 1);
+	right = std::make_shared<Cylinder>(16, chartreuse, 1);
 
-	// END CODE HERE 
+	backLeft = std::make_shared<Sphere>(1, forestGreen);
+	backRight = std::make_shared<Sphere>(1, forestGreen);
 
+	// Hierarchy
+	center->AddChild(top.get());
+
+	center->AddChild(left.get());
+	center->AddChild(right.get());
+
+	left->AddChild(backLeft.get());
+	right->AddChild(backRight.get());
+
+	// Transformations
+	center->SetTransform(scale(vec3(1, .25, 1)));
+
+	top->SetTransform(scale(vec3(1, 2, 1)) * translate(vec3(0, .25, 0)));
+
+	left->SetTransform(
+		scale(vec3(.5, 2, 2)) *
+		translate(vec3(-1, 0, -.5)) *
+		rotate(mat4(), .5f * pi(), X_AXIS) *
+		shearY3D(rotate(mat4(), -.5f * pi(), Y_AXIS), .5f, .25f)
+	);
+	right->SetTransform(
+		scale(vec3(.5, 2, 2)) *
+		translate(vec3(1, 0, -.5)) *
+		rotate(mat4(), .5f * pi(), X_AXIS) *
+		shearY3D(rotate(mat4(), -.5f * pi(), Y_AXIS), .5f, .25f)
+	);
+
+	backLeft->SetTransform(
+		inverse(shearY3D(rotate(mat4(), -.5f * pi(), Y_AXIS), .5f, .25f)) *
+		scale(vec3(.5)) *
+		translate(vec3(0, -.75, 0))
+	);
+	backRight->SetTransform(
+		inverse(shearY3D(rotate(mat4(), -.5f * pi(), Y_AXIS), .5f, .25f)) *
+		scale(vec3(.5)) *
+		translate(vec3(0, -.75, 0))
+	);
 }
 
 void Fighter2::Render()
 {
-	// Render fighter1
-	// TODO CODE HERE
+	center->Render();
+	top->Render();
 
+	left->Render();
+	right->Render();
 
-
-	// END CODE HERE 
-
+	backLeft->Render();
+	backRight->Render();
 }
 
 void Fighter2::Update(double dt)
 {
-	// Update fighter1's position
-	// TODO CODE HERE
+	Position += _velocity * decimal(dt);
+	scaleUp = !scaleUp;
 
-
-
-	// END CODE HERE 
-
+	center->SetTransform(
+		translate(Position) *
+		scale(vec3(1, .25, 1)) *
+		scale(scaleUp ? vec3(2) : vec3(.5))
+	);
 }
 
 AABB Fighter2::GetGlobalAABB()
 {
-	return {}; // TODO
+	return center->GetGeneralAABB();
 }
 
 std::vector<AABB> Fighter2::GetAABB()
 {
-	return {}; // TODO
+	return center->GetAABBList();
 }
 
 bool Fighter2::Intersect(vec3 world_pos)
 {
-	return false; // TODO
+	return center->Intersect(world_pos);
 }

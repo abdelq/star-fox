@@ -241,13 +241,15 @@ void CoreTP1::spawn_enemies()
 		if (rand() % 100 < 75)
 		{
 			active_fighters.push_back(std::make_unique<Fighter1>(
-				spawn, vec3(0, 0, 2.5), 2, vec3(0, 0, 5)
+				spawn, vec3(0, 0, 2.5), 2,
+				vec3((rand() % 2 ? 1 : -1) * rand() % 2,
+					(rand() % 2 ? 1 : -1) * rand() % 2, 5)
 			));
 		}
 		else
 		{
 			active_fighters.push_back(std::make_unique<Fighter2>(
-				spawn, vec3(0, 0, 5), 4, vec3(0, 0, 10)
+				spawn, vec3(0, 0, 5), 2, vec3(0, 0, 10)
 			));
 		}
 	}
@@ -263,10 +265,9 @@ void CoreTP1::fire_enemies()
 			fighter->last_shot = time;
 			for (vec3 point : fighter->GetProjectileSpawnPoint())
 			{
-				// TODO Schema de tir pour le 2e ennemi, maybe on each update for the second put projectile_vel as player pos ?
 				active_projectiles.push_back(std::make_unique<Projectile>(
 					point, fighter->projectile_vel,
-					vec4(0.0f, 0.0f, 0.7f, 1.0f), vec4(0.0f, 0.0f, 0.7f, 0.8f),
+					vec4(.0, .0, .7, 1.), vec4(.0, .0, .7, .8),
 					false
 				));
 			}
