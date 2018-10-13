@@ -6,14 +6,14 @@
 #define Z_AXIS vec3(0, 0, 1)
 Player::Player()
 {
-	std::srand(std::time(0));
-	std::memset(input, 0, sizeof input);
+	srand(time(0));
+	memset(input, 0, sizeof input);
 
-	static vec4 oxBlood   = vec4(0.502, 0.000, 0.125, 1.000);
-	static vec4 celeste   = vec4(0.698, 1.000, 1.000, 1.000);
-	static vec4 silver    = vec4(0.753, 0.753, 0.753, 1.000);
-	static vec4 oldSilver = vec4(0.518, 0.518, 0.510, 1.000);
-	static vec4 flame     = vec4(0.886, 0.345, 0.133, 1.000);
+	static vec4 oxBlood = vec4(128, 0, 32, 255) / 255;
+	static vec4 celeste = vec4(178, 255, 255, 255) / 255;
+	static vec4 silver = vec4(192, 192, 192, 255) / 255;
+	static vec4 oldSilver = vec4(132, 132, 130, 255) / 255;
+	static vec4 flame = vec4(226, 88, 34, 255) / 255;
 
 	// Primitives
 	core = std::make_shared<Pyramid>(oxBlood);
@@ -53,10 +53,6 @@ Player::Player()
 	right_2_rocket->AddChild(right_2_rocket_fire.get());
 
 	// Transformations
-	// XXX These and others are in header to add and to use properly
-	// XXX Follow proper hierarchy from file regarding transfos
-	// XXX Why isn't the pyramid a bit more flat + possible issue regarding
-	// collision box because it's too big
 	core_trans = scale(vec3(1, 1, .25)) * rotate(mat4(), -.5f * pi(), X_AXIS);
 	inv_core_trans = inverse(core_trans);
 
@@ -81,52 +77,49 @@ Player::Player()
 		shearY3D(mat4(), 1.f, .25f)
 	);
 
+	mat4 left_wing_trans = rotate(mat4(), .5f * pi(), X_AXIS) *
+		shearZ3D(shearY3D(mat4(), 1.f, .25f), -1.f, .25f);
 	left_wing->SetTransform(
 		scale(vec3(1.25, .25, .25)) *
-		rotate(mat4(), .5f * pi(), X_AXIS) *
-		translate(vec3(-.75, -2, 1.75)) *
-		shearZ3D(shearY3D(mat4(), 1.f, .25f), -1.f, .25f)
+		left_wing_trans *
+		translate(vec3(-.75, -2, 1.75))
 	);
 
+	mat4 right_wing_trans = rotate(mat4(), .5f * pi(), X_AXIS) *
+		shearZ3D(shearY3D(mat4(), -1.f, .25f), 1.f, .25f);
 	right_wing->SetTransform(
 		scale(vec3(1.25, .25, .25)) *
-		rotate(mat4(), .5f * pi(), X_AXIS) *
-		translate(vec3(.75, -2, 1.75)) *
-		shearZ3D(shearY3D(mat4(), -1.f, .25f), 1.f, .25f)
+		right_wing_trans *
+		translate(vec3(.75, -2, 1.75))
 	);
 
 	left_rocket->SetTransform(
-		inverse(shearZ3D(shearY3D(mat4(), 1.f, .25f), -1.f, .25f)) * // XXX
-		rotate(mat4(), -.5f * pi(), X_AXIS) * // XXX
+		inverse(left_wing_trans) *
 		scale(vec3(.25, 2, 1)) *
 		translate(vec3(1 , 0, -.75))
 	);
 
 	left_2_rocket->SetTransform(
-		inverse(shearZ3D(shearY3D(mat4(), 1.f, .25f), -1.f, .25f)) * // XXX
-		rotate(mat4(), -.5f * pi(), X_AXIS) * // XXX
+		inverse(left_wing_trans) *
 		scale(vec3(.25, 2, 1)) *
 		translate(vec3(-1 , 0, -1.25))
 	);
 
 	right_rocket->SetTransform(
-		inverse(shearZ3D(shearY3D(mat4(), -1.f, .25f), 1.f, .25f)) * // XXX
-		rotate(mat4(), -.5f * pi(), X_AXIS) * // XXX
+		inverse(right_wing_trans) *
 		scale(vec3(.25, 2, 1)) *
 		translate(vec3(-1 , 0, -.75))
 	);
 
 	right_2_rocket->SetTransform(
-		inverse(shearZ3D(shearY3D(mat4(), -1.f, .25f), 1.f, .25f)) * // XXX
-		rotate(mat4(), -.5f * pi(), X_AXIS) * // XXX
+		inverse(right_wing_trans) *
 		scale(vec3(.25, 2, 1)) *
 		translate(vec3(1 , 0, -1.25))
 	);
 
-	// XXX
-	left_rocket_trans = right_rocket_trans =
-	    left_2_rocket_trans = right_2_rocket_trans =
-	    scale(vec3(.5, 2, .5)) * translate(vec3(0, -.25, 0));
+	left_rocket_trans = left_2_rocket_trans =
+		right_rocket_trans = right_2_rocket_trans =
+		scale(vec3(.5, 2, .5)) * translate(vec3(0, -.25, 0));
 
 	left_rocket_fire->SetTransform(left_rocket_trans);
 	left_2_rocket_fire->SetTransform(left_2_rocket_trans);
@@ -157,6 +150,8 @@ void Player::Render()
 
 void Player::Update(double dt)
 {
+	decimal delta = decimal(dt);
+
 	// Acceleration
 	accel = vec2(input[RIGHT] - input[LEFT], input[UP] - input[DOWN]);
 	if (accel != vec2(0))
@@ -164,10 +159,10 @@ void Player::Update(double dt)
 	accel *= accel_value;
 
 	// Speed
-	speed += accel * (float)dt;
+	speed += accel * delta;
 
 	vec2 speed_sign = sign(speed);
-	speed -= speed_sign * trainee * (float)dt;
+	speed -= speed_sign * trainee * delta;
 	if (sign(speed.x) != speed_sign.x)
 		speed.x = 0;
 	if (sign(speed.y) != speed_sign.y)
@@ -176,14 +171,14 @@ void Player::Update(double dt)
 	speed = clamp(speed, -max_speed, max_speed);
 
 	// Position
-	Position.x = clamp(Position.x + speed.x * (float)dt, -8.f, 8.f);
-	Position.y = clamp(Position.y + speed.y * (float)dt, -7.f, 7.f);
+	Position.x = clamp(Position.x + speed.x * delta, -8.f, 8.f);
+	Position.y = clamp(Position.y + speed.y * delta, -7.f, 7.f);
 
 	// Rotation
-	rotation += accel * (float)dt;
+	rotation += accel * delta;
 
 	vec2 rotation_sign = sign(rotation);
-	rotation -= rotation_sign * trainee * (float)dt;
+	rotation -= rotation_sign * trainee * delta;
 	if (sign(rotation[0]) != rotation_sign[0])
 		rotation[0] = 0;
 	if (sign(rotation[1]) != rotation_sign[1])
@@ -196,29 +191,29 @@ void Player::Update(double dt)
 	core->SetTransform(
 		translate(Position) *
 		core_trans *
-		rotate(mat4(), rotation[1]/360 * 2 * pi() * rotation_coeff, X_AXIS) *
-		rotate(mat4(), -rotation[0]/360 * 2 * pi() * rotation_coeff, Z_AXIS)
+		rotate(mat4(),  rotation[1]/180 * pi() * rotation_coeff, X_AXIS) *
+		rotate(mat4(), -rotation[0]/180 * pi() * rotation_coeff, Z_AXIS)
 	);
 
-	// XXX Modifying rocket fire length
-	float fireLength = .75f * sqrt(speed.x*speed.x + speed.y*speed.y)/sqrt(2*max_speed*max_speed) - .25f;
-	// XXX Not acceptable, slightly shitty animation
+	// Modifying rocket fire length
+	decimal fireLen = .5 * l2Norm(vec3(speed, 0))/l2Norm(vec3(max_speed, max_speed, 0)) - .5;
+
 	left_rocket_fire->SetTransform(
 		left_rocket_trans *
-		translate(vec3(0, -fireLength * rand()/RAND_MAX, 0))
+		translate(vec3(0, -fireLen * rand()/RAND_MAX, 0))
 	);
 	left_2_rocket_fire->SetTransform(
 		left_2_rocket_trans *
-		translate(vec3(0,  -fireLength * rand()/RAND_MAX, 0))
+		translate(vec3(0, -fireLen * rand()/RAND_MAX, 0))
 	);
 
 	right_rocket_fire->SetTransform(
 		right_rocket_trans *
-		translate(vec3(0,  -fireLength * rand()/RAND_MAX, 0))
+		translate(vec3(0, -fireLen * rand()/RAND_MAX, 0))
 	);
 	right_2_rocket_fire->SetTransform(
 		right_2_rocket_trans *
-		translate(vec3(0,  -fireLength * rand()/RAND_MAX, 0))
+		translate(vec3(0, -fireLen * rand()/RAND_MAX, 0))
 	);
 }
 

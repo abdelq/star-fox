@@ -35,10 +35,8 @@ void CoreTP1::Render(double dt)
 			player.last_shot = time;
 			for (vec3 point : player.getProjectileSpawnPoint())
 			{
-				// XXX I want proper rotation in speed !
 				active_projectiles.push_back(std::make_unique<Projectile>(
-					point,
-					player.projectile_speed,
+					point, player.projectile_speed,
 					player.projectile_color_in, player.projectile_color_out,
 					true
 				));
@@ -119,13 +117,11 @@ void CoreTP1::Render(double dt)
 			// Clear AABB lines buffer
 			_lineVertices.clear();
 
-			// Fill AABB lines for player and player's component
+			// Fill AABB lines for player
 			auto globalAABB = player.GetGlobalAABB();
 			AABB(globalAABB.min, globalAABB.max);
 			for (auto box : player.GetAABB())
-			{
 				AABB(box.min, box.max);
-			}
 
 			// Fill AABB lines for fighters
 			for (auto& fighter : active_fighters)
@@ -133,9 +129,7 @@ void CoreTP1::Render(double dt)
 				auto globalAABB = fighter->GetGlobalAABB();
 				AABB(globalAABB.min, globalAABB.max);
 				for (auto box : fighter->GetAABB())
-				{
 					AABB(box.min, box.max);
-				}
 			}
 
 			DrawAABBs();
@@ -211,7 +205,6 @@ void CoreTP1::OnKeySPACE(bool down)
 	else
 	{
 		game_over = false;
-		//clear_scene(); // XXX
 		start_time = glfwGetTime();
 		player = Player();
 	}
@@ -244,19 +237,17 @@ void CoreTP1::spawn_enemies()
 	{
 		last_spawn = time;
 
-		// XXX What about seed of rand
-		vec3 spawn = vec3(rand() % 16 - 8, rand() % 14 - 7, -100); // XXX biased random bc modulo + hmmm world size in z
-		if ((rand() % 100) < 75) // XXX Biased
+		vec3 spawn = vec3(rand() % 17 - 8, rand() % 15 - 7, -100);
+		if (rand() % 100 < 75)
 		{
 			active_fighters.push_back(std::make_unique<Fighter1>(
-				spawn, vec3(0, 0, 2.5), 2.0f, vec3(0, 0, 5) // XXX Tweak
+				spawn, vec3(0, 0, 2.5), 2, vec3(0, 0, 5)
 			));
 		}
 		else
 		{
-			// TODO
 			active_fighters.push_back(std::make_unique<Fighter2>(
-				spawn, vec3(0, 0, 5), 2.0f, vec3(0, 0, 10) // XXX Tweak
+				spawn, vec3(0, 0, 5), 4, vec3(0, 0, 10)
 			));
 		}
 	}
@@ -264,20 +255,17 @@ void CoreTP1::spawn_enemies()
 
 void CoreTP1::fire_enemies()
 {
-	for (auto fighter = active_fighters.begin(); fighter != active_fighters.end(); ++fighter)
+	for (auto& fighter : active_fighters)
 	{
 		auto time = glfwGetTime();
-		if (time - (*fighter)->last_shot > (*fighter)->rof)
+		if (time - fighter->last_shot > fighter->rof)
 		{
-			(*fighter)->last_shot = time;
-			for (vec3 point : (*fighter)->GetProjectileSpawnPoint())
+			fighter->last_shot = time;
+			for (vec3 point : fighter->GetProjectileSpawnPoint())
 			{
-				// XXX Randomness to colors? Speed projectile_vel, maybe depending on the score?
 				active_projectiles.push_back(std::make_unique<Projectile>(
-					point,
-					(*fighter)->projectile_vel,
-					vec4(0.0f, 0.0f, 0.7f, 1.0f),
-					vec4(0.0f, 0.0f, 0.7f, 0.8f),
+					point, fighter->projectile_vel,
+					vec4(0.0f, 0.0f, 0.7f, 1.0f), vec4(0.0f, 0.0f, 0.7f, 0.8f),
 					false
 				));
 			}
@@ -289,19 +277,15 @@ void CoreTP1::clean_scene()
 {
 	for (auto proj = active_projectiles.begin(); proj != active_projectiles.end();)
 	{
-		if ((*proj)->position().z > 10.f || (*proj)->position().z < -100.f) // XXX
-		{
+		if ((*proj)->position().z > 10 || (*proj)->position().z < -100)
 			proj = active_projectiles.erase(proj);
-		}
 		else
-		{
 			++proj;
-		}
 	}
 
 	for (auto fighter = active_fighters.begin(); fighter != active_fighters.end();)
 	{
-		if ((*fighter)->Position.z > 4) // XXX
+		if ((*fighter)->Position.z > 5)
 		{
 			player.score -= 1000;
 			fighter = active_fighters.erase(fighter);
@@ -326,7 +310,7 @@ void CoreTP1::player_hit()
 	{
 		clean_scene();
 
-		player.Position = vec3();
+		player.Position = vec3(0);
 		if (--player.lifes == 0)
 			game_over = true;
 	}

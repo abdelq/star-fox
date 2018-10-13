@@ -51,36 +51,20 @@ AABB Node::GetFullBoundingBox()
 
 bool Node::Intersect(vec3 world_pos)
 {
-	// XXX What about GetGeneralAABB?
-	AABB generalAABB = GetGeneralAABB();
-	if (generalAABB.min.x < world_pos.x && generalAABB.max.x > world_pos.x &&
-	    generalAABB.min.y < world_pos.y && generalAABB.max.y > world_pos.y &&
-	    generalAABB.min.z < world_pos.z && generalAABB.max.z > world_pos.z)
-	{
-		return true;
-	}
-
-	/*for (auto box : GetAABBList())
-	{
-		if (box.min.x < world_pos.x && box.max.x > world_pos.x &&
-		    box.min.y < world_pos.y && box.max.y > world_pos.y &&
-		    box.min.z < world_pos.z && box.max.z > world_pos.z)
-		{
-			return true;
-		}
-	}*/
-
-	return false;
+	AABB general = GetGeneralAABB();
+	return general.min.x < world_pos.x && general.max.x > world_pos.x &&
+		general.min.y < world_pos.y && general.max.y > world_pos.y &&
+		general.min.z < world_pos.z && general.max.z > world_pos.z;
 }
 
 std::vector<AABB> Node::GetAABBList()
 {
 	std::vector<AABB> results;
 	results.push_back(GetFullBoundingBox());
-	for (int i = 0; i < _children.size(); ++i)
+	for (uint i = 0; i < _children.size(); ++i)
 	{
 		std::vector<AABB> tree = _children[i]->GetAABBList();
-		for (int j = 0; j < tree.size(); ++j)
+		for (uint j = 0; j < tree.size(); ++j)
 		{
 			results.push_back(tree[j]);
 		}
@@ -94,7 +78,7 @@ AABB Node::GetGeneralAABB()
 	vec3 min = full_bounding_box.min;
 	vec3 max = full_bounding_box.max;
 
-	for (int i = 0; i < _children.size(); ++i)
+	for (uint i = 0; i < _children.size(); ++i)
 	{
 		auto general_aabb = _children[i]->GetGeneralAABB();
 		vec3 child_min = general_aabb.min;
@@ -120,22 +104,17 @@ AABB Node::GetGeneralAABB()
 
 void Node::ComputeBoundingBox()
 {
-	auto fullTrans = fullTransform(); // XXX decl type
-	_boundingBox = { vec3(1.f) * 100.f, vec3(1.f) * -100.f }; // XXX
+	mat4 fullTrans = fullTransform();
+
+	_boundingBox = { vec3(100), vec3(-100) };
 	for (vec3 b : boundaries)
 	{
-		// Pas super, peut causer des problèmes avec pyramide/cylindre
-		// centrés sur bases trop gros pour bounding box, mais wonky
-		vec4 bTrans = fullTrans * vec4(b, 1); // XXX
-
-		// XXX
-		_boundingBox.min.x = min(bTrans.x, _boundingBox.min.x);
-		_boundingBox.min.y = min(bTrans.y, _boundingBox.min.y);
-		_boundingBox.min.z = min(bTrans.z, _boundingBox.min.z);
-
-		_boundingBox.max.x = max(bTrans.x, _boundingBox.max.x);
-		_boundingBox.max.y = max(bTrans.y, _boundingBox.max.y);
-		_boundingBox.max.z = max(bTrans.z, _boundingBox.max.z);
+		vec4 bTrans = fullTrans * vec4(b, 1);
+		for (int i = 0; i < 3; ++i)
+		{
+			_boundingBox.min[i] = min(bTrans[i], _boundingBox.min[i]);
+			_boundingBox.max[i] = max(bTrans[i], _boundingBox.max[i]);
+		}
 	}
 }
 
