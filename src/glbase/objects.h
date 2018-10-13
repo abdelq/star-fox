@@ -46,6 +46,7 @@ public:
 	double last_shot = 0.0f;
 	double rof = 2.0f;
 	vec3 projectile_vel = vec3(0.0f, 0.0f, 5.0f);
+	uint score;
 
 	virtual AABB GetGlobalAABB();
 	virtual std::vector<AABB> GetAABB();
@@ -82,7 +83,7 @@ private:
 	std::shared_ptr<Pyramid> down;
 
 	float animation = 0;
-	float animationSpeed = 2;
+	float animSpeed = 2;
 };
 
 class Fighter2 : public Entity

@@ -77,7 +77,7 @@ void CoreTP1::Render(double dt)
 					if ((*fighter)->Intersect((*proj)->position()))
 					{
 						hit_something = true;
-						player.score += 1000;
+						player.score += (*fighter)->score;
 						fighter = active_fighters.erase(fighter);
 					}
 					else
@@ -263,6 +263,7 @@ void CoreTP1::fire_enemies()
 			fighter->last_shot = time;
 			for (vec3 point : fighter->GetProjectileSpawnPoint())
 			{
+				// TODO Schema de tir pour le 2e ennemi, maybe on each update for the second put projectile_vel as player pos ?
 				active_projectiles.push_back(std::make_unique<Projectile>(
 					point, fighter->projectile_vel,
 					vec4(0.0f, 0.0f, 0.7f, 1.0f), vec4(0.0f, 0.0f, 0.7f, 0.8f),
@@ -287,7 +288,7 @@ void CoreTP1::clean_scene()
 	{
 		if ((*fighter)->Position.z > 5)
 		{
-			player.score -= 1000;
+			player.score -= (*fighter)->score;
 			fighter = active_fighters.erase(fighter);
 		}
 		else
@@ -308,7 +309,10 @@ void CoreTP1::player_hit()
 {
 	if (!player.god_mode)
 	{
-		clean_scene();
+		start_time = glfwGetTime();
+
+		active_fighters.clear();
+		active_projectiles.clear();
 
 		player.Position = vec3(0);
 		if (--player.lifes == 0)

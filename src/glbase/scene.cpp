@@ -51,10 +51,26 @@ AABB Node::GetFullBoundingBox()
 
 bool Node::Intersect(vec3 world_pos)
 {
-	AABB general = GetGeneralAABB();
-	return general.min.x < world_pos.x && general.max.x > world_pos.x &&
-		general.min.y < world_pos.y && general.max.y > world_pos.y &&
-		general.min.z < world_pos.z && general.max.z > world_pos.z;
+	bool intersect = true;
+
+	AABB gen = GetGeneralAABB();
+	for (int i = 0; i < 3; ++i)
+		intersect &= gen.min[i] < world_pos[i] && gen.max[i] > world_pos[i];
+
+	if (intersect)
+	{
+		for (AABB box : GetAABBList())
+		{
+			if (box.min.x < world_pos.x && box.max.x > world_pos.x &&
+				box.min.y < world_pos.y && box.max.y > world_pos.y &&
+				box.min.z < world_pos.z && box.max.z > world_pos.z)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 std::vector<AABB> Node::GetAABBList()

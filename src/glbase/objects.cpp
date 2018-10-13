@@ -1,6 +1,9 @@
 #include "objects.h"
 #include <glm/gtx/transform2.hpp>
 
+#define X_AXIS vec3(1, 0, 0)
+#define Y_AXIS vec3(0, 1, 0)
+#define Z_AXIS vec3(0, 0, 1)
 Projectile::Projectile(const vec3 &position, const vec3 &velocity, const vec4 &color_i, const vec4 &color_o, bool friendly) :
 	_inner(1, color_i),
 	_outer(1, color_o),
@@ -49,7 +52,10 @@ bool Entity::Intersect(vec3 world_pos)
 
 Fighter1::Fighter1(const vec3& position, const vec3& velocity, double rate_of_fire, vec3 proj_vel) : Entity(position, velocity, rate_of_fire, proj_vel)
 {
-	static vec4 forestGreen = vec4(0.133, 0.545, 0.133, 1.000);
+	score = 1000;
+
+	// TODO Review requirements for ennemy
+	static vec4 forestGreen = vec4(34, 139, 34, 255) / 255;
 
 	// Primitives
 	horizontal = std::make_shared<Box>(forestGreen);
@@ -72,20 +78,20 @@ Fighter1::Fighter1(const vec3& position, const vec3& velocity, double rate_of_fi
 	vertical->AddChild(down.get());
 
 	// Transformations
-	// XXX make sure I meet all the requirements + Maybe add caps + shearing
+	// TODO make sure I meet all the requirements + Maybe add caps + shearing
 	horizontal->SetTransform(scale(vec3(2, 1, 1)));
 	vertical->SetTransform(scale(vec3(1, 1, 2)));
 
 	center->SetTransform(translate(Position) *
-		rotate(mat4(), .5f * pi(), vec3(1, 0, 0)));
-	left->SetTransform(scale(vec3(.5f, 1, 1)) * translate(vec3(0, 1, 0)) *
-		rotate(mat4(), .5f * pi(), vec3(0, 0, 1)));
-	right->SetTransform(scale(vec3(.5f, 1, 1)) * translate(vec3(0, 1, 0)) *
-		rotate(mat4(), -.5f * pi(), vec3(0, 0, 1)));
-	up->SetTransform(scale(vec3(1, 1, .5f)) * translate(vec3(0, 1, 0)) *
-		rotate(mat4(), -.5f * pi(), vec3(1, 0, 0)));
-	down->SetTransform(scale(vec3(1, 1, .5f)) * translate(vec3(0, 1, 0)) *
-		rotate(mat4(), .5f * pi(), vec3(1, 0, 0)));
+		rotate(mat4(), .5f * pi(), X_AXIS));
+	left->SetTransform(scale(vec3(.5, 1, 1)) * translate(Y_AXIS) *
+		rotate(mat4(), .5f * pi(), Z_AXIS));
+	right->SetTransform(scale(vec3(.5, 1, 1)) * translate(Y_AXIS) *
+		rotate(mat4(), -.5f * pi(), Z_AXIS));
+	up->SetTransform(scale(vec3(1, 1, .5)) * translate(Y_AXIS) *
+		rotate(mat4(), -.5f * pi(), X_AXIS));
+	down->SetTransform(scale(vec3(1, 1, .5)) * translate(Y_AXIS) *
+		rotate(mat4(), .5f * pi(), X_AXIS));
 }
 
 void Fighter1::Render()
@@ -103,11 +109,11 @@ void Fighter1::Render()
 void Fighter1::Update(double dt)
 {
 	Position += _velocity * decimal(dt);
-	animation += dt; // XXX Could cause overflow
+	animation += dt;
 
 	center->SetTransform(translate(Position) *
-		rotate(mat4(), .5f * pi(), vec3(1, 0, 0)) *
-		rotate(mat4(), animation * animationSpeed, vec3(0, 1, 0)));
+		rotate(mat4(), .5f * pi(), X_AXIS) *
+		rotate(mat4(), animation * animSpeed, Y_AXIS));
 }
 
 AABB Fighter1::GetGlobalAABB()
@@ -127,6 +133,7 @@ bool Fighter1::Intersect(vec3 world_pos)
 
 Fighter2::Fighter2(const vec3& position, const vec3& velocity, double rate_of_fire, vec3 proj_vel) : Entity(position, velocity, rate_of_fire, proj_vel)
 {
+	score = 2000;
 
 	// Build fighter1 (build a hierarchy using primitives and transformations)
 	// TODO CODE HERE
